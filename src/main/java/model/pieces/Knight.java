@@ -1,22 +1,30 @@
 package model.pieces;
 
-import model.enums.PieceColorEnum;
+import model.Direction;
 import model.Position;
+import model.enums.PieceColorEnum;
 
-import static utils.Constant.piecesImageCommonPath;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class Knight extends Piece{
-    public Knight(PieceColorEnum color) {
-        super(color);
+    public Knight(PieceColorEnum color, Position pos) {
+        super(color,pos);
     }
 
     @Override
-    public boolean move(Position newPos){
+    public boolean canMove(Position newPos, List<Piece> pieces){
         return false;
     }
 
     @Override
     public String getImagePath(){
-        return piecesImageCommonPath + (this.getColor() == PieceColorEnum.WHITE ? "whiteKnight" : "blackKnight") + ".png";
+        return commonImagePath("whiteKnight","blackKnight");
+    }
+
+    @Override
+    public List<Direction> getDirections(){
+        return new ArrayList<>();
     }
 }

@@ -1,9 +1,9 @@
 import controll.GameEngine;
-import view.BoardView;
-import model.Board;
+import utils.Constant;
 
 public class Game {
     public static void main(String[] args) {
+        Constant.init();
         GameEngine gameEngine = new GameEngine();
     }
 

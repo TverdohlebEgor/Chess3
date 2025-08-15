@@ -14,6 +14,10 @@ public class BoardTileView extends JPanel {
         this.setBackground(bgColor);
     }
 
+    public void removePiece(){
+        this.image = null;
+    }
+
     public void setPiece(String imagePath){
         try {
             if (imagePath != null) {

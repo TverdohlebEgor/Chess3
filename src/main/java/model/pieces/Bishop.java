@@ -1,22 +1,37 @@
 package model.pieces;
 
-import model.enums.PieceColorEnum;
+import model.Direction;
 import model.Position;
+import model.enums.PieceColorEnum;
 
-import static utils.Constant.piecesImageCommonPath;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static utils.Constant.MAX_DISTANCE;
 
 public class Bishop extends Piece{
-    public Bishop(PieceColorEnum pieceColorEnum) {
-        super(pieceColorEnum);
+    public Bishop(PieceColorEnum pieceColorEnum, Position pos) {
+        super(pieceColorEnum,pos);
     }
 
     @Override
-    public boolean move(Position newPos){
+    public boolean canMove(Position newPos, List<Piece> pieces){
         return false;
     }
 
     @Override
     public String getImagePath(){
-        return piecesImageCommonPath + (this.getColor() == PieceColorEnum.WHITE ? "whiteBishop" : "blackBishop") + ".png";
+        return commonImagePath("whiteBishop","blackBishop");
+    }
+
+    @Override
+    public List<Direction> getDirections(){
+       return List.of(
+           new Direction(1,1, MAX_DISTANCE),
+           new Direction(1,-1, MAX_DISTANCE),
+           new Direction(-1,1, MAX_DISTANCE),
+           new Direction(-1,-1, MAX_DISTANCE)
+       );
     }
 }

@@ -1,22 +1,53 @@
 package model.pieces;
 
-import model.enums.PieceColorEnum;
+import model.Direction;
 import model.Position;
+import model.enums.PieceColorEnum;
 
-import static utils.Constant.piecesImageCommonPath;
+import java.util.List;
+import java.util.Map;
+
+import static java.lang.Math.abs;
 
 public class King extends Piece{
-    public King(PieceColorEnum color) {
-        super(color);
+    public King(PieceColorEnum color, Position pos) {
+        super(color,pos);
     }
 
     @Override
-    public boolean move(Position newPos){
-        return false;
+    public boolean canMove(Position newPos, List<Piece> pieces){
+        int yDistance = abs(this.getPosition().getY() - newPos.getY());
+        int xDistance = abs(this.getPosition().getX() - newPos.getX());
+        if(yDistance > 1 || xDistance > 1) {
+            return false;
+        }
+        if(!positionInDirection().contains(newPos)){
+            return false;
+        }
+        for(Piece piece : pieces){
+          if(piece.getPosition().equals(newPos) && piece.getColor() == this.getColor()){
+                return false;
+          }
+        }
+        return true;
     }
 
     @Override
     public String getImagePath(){
-        return piecesImageCommonPath + (this.getColor() == PieceColorEnum.WHITE ? "whiteKing" : "blackKing") + ".png";
+        return commonImagePath("whiteKing","blackKing");
+    }
+
+    @Override
+    public List<Direction> getDirections(){
+        return List.of(
+            new Direction(0,1,1),
+            new Direction(0,-1,1),
+            new Direction(1,0,1),
+            new Direction(-1,0,1),
+            new Direction(1,1,1),
+            new Direction(1,-1,1),
+            new Direction(-1,1,1),
+            new Direction(-1,-1,1)
+        );
     }
 }

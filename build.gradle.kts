@@ -35,5 +35,6 @@ tasks.test {
 
 tasks.withType<JavaExec> {
     standardOutput = System.out
-    jvmArgs("-Dfile.encoding=UTF-8")
+    val pathToResources = file("${project.rootDir}/src/main/resources/pieces")
+    jvmArgs("-Dfile.encoding=UTF-8","-Dproject.root=" + project.rootDir.absolutePath, "-Dresources.path=" + pathToResources.absolutePath)
 }

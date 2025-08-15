@@ -129,7 +129,7 @@ public class NotificationHandler {
             }
         } catch (Exception e) {
             log.warn("The object {} doesn't contain method {}", lobj, functionName);
-            throw new RuntimeException(e);
+            log.warn(e.getStackTrace().toString());
         }
     }
 

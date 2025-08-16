@@ -30,6 +30,8 @@ dependencies {
 }
 
 tasks.test {
+    val pathToResources = file("${project.rootDir}/src/main/resources/pieces")
+    jvmArgs("-Dfile.encoding=UTF-8","-Dproject.root=" + project.rootDir.absolutePath, "-Dresources.path=" + pathToResources.absolutePath)
     useJUnitPlatform()
 }
 

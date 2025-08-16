@@ -32,7 +32,7 @@ public class Pawn extends Piece{
             //TODO Handle captures and checks
             return false;
         }
-        for(Position pos : positionInDirection()){
+        for(Position pos : positionInDirection().getFirst()){
             for(Piece piece : pieces){
                 if(piece.getPosition().equals(pos)){
                     return false;
@@ -56,5 +56,9 @@ public class Pawn extends Piece{
                 isHasMoved() ? 1 : 2
             )
         );
+    }
+    @Override
+    public String toString(){
+        return getColor() == WHITE ? "P" : "p";
     }
 }

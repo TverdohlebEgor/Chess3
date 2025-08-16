@@ -5,9 +5,8 @@ import model.Position;
 import model.enums.PieceColorEnum;
 
 import java.util.List;
-import java.util.Map;
 
-import static java.lang.Math.abs;
+import static model.enums.PieceColorEnum.WHITE;
 import static utils.Constant.MAX_DISTANCE;
 
 public class Queen extends Piece{
@@ -17,14 +16,34 @@ public class Queen extends Piece{
 
     @Override
     public boolean canMove(Position newPos, List<Piece> pieces){
-        if(!positionInDirection().contains(newPos)){
+        List<Position> actualDirectionsList = null;
+        for(List<Position> dirList : positionInDirection()){
+            for(Position pos : dirList){
+                if(newPos.equals(pos)){
+                    actualDirectionsList = dirList;
+                    break;
+                }
+            }
+        }
+
+        //New pos non in possible directions
+        if(actualDirectionsList == null){
             return false;
         }
-        for(Piece piece : pieces){
-          if(piece.getPosition().equals(newPos) && piece.getColor() == this.getColor()){
-                return false;
-          }
+
+        for(Position pos : actualDirectionsList){
+            for(Piece piece : pieces){
+                //Trovato ostacolo
+                if(piece.getPosition().equals(pos) && piece.getColor() == this.getColor()){
+                    return false;
+                }
+            }
+            // Trovato mia casella
+            if(pos.equals(newPos)){
+                return true;
+            }
         }
+
         return true;
     }
 
@@ -45,5 +64,10 @@ public class Queen extends Piece{
             new Direction(-1,1,MAX_DISTANCE),
             new Direction(-1,-1,MAX_DISTANCE)
         );
+    }
+
+    @Override
+    public String toString(){
+        return getColor() == WHITE ? "Q" : "q";
     }
 }

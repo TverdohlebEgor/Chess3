@@ -38,11 +38,14 @@ public abstract class Piece {
             .toString();
     }
 
-    List<Position> positionInDirection(){
-        List<Position> result = new ArrayList<>();
+    List<List<Position>> positionInDirection(){
+        List<List<Position>> result = new ArrayList<>();
         for(Direction dir : getDirections()){
-            Position tempPos = this.getPosition();
+            Position tempPos = this.getPosition().copy();
+            List<Position> directionList = new ArrayList<>();
             int tempDis = 0;
+            tempPos.addToX(dir.getX());
+            tempPos.addToY(dir.getY());
             while(
                 tempPos.getY() >= 0 &&
                 tempPos.getX() >= 0 &&
@@ -50,11 +53,12 @@ public abstract class Piece {
                 tempPos.getX() < 8 &&
                 tempDis < dir.getDistance()
             ) {
+                tempDis+=1;
+                directionList.add(tempPos.copy());
                 tempPos.addToX(dir.getX());
                 tempPos.addToY(dir.getY());
-                tempDis+=1;
-                result.add(tempPos.copy());
             }
+            result.add(directionList);
         }
         return result;
     }

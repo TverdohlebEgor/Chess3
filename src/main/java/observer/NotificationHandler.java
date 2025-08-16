@@ -1,5 +1,6 @@
 package observer;
 
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,9 @@ public class NotificationHandler {
 
     private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_MAP = new HashMap<>();
 
+    @Setter
+    private static boolean enabled = true;
+
     static {
         WRAPPER_TO_PRIMITIVE_MAP.put(Boolean.class, boolean.class);
         WRAPPER_TO_PRIMITIVE_MAP.put(Byte.class, byte.class);
@@ -27,6 +31,7 @@ public class NotificationHandler {
     }
 
     public static void subscribe(String channelName, Object obj) {
+        if(!enabled) return;
         if (!channels.containsKey(channelName)) {
             channels.put(channelName, new ArrayList<>());
         }
@@ -42,6 +47,7 @@ public class NotificationHandler {
     }
 
     public static void unsubscribe(String channelName, Object obj) {
+        if(!enabled) return;
         if (!channels.containsKey(channelName)) {
             log.warn("The Object {} Is not subscribed to {}", obj, channelName);
             return;
@@ -75,6 +81,7 @@ public class NotificationHandler {
      *                     of these arguments are used to infer the method's signature.
      */
     public static void send(String channelName, String functionName, Object... args) {
+        if(!enabled) return;
         if (!channels.containsKey(channelName)) {
             log.warn("Channel {} doesn't exist", channelName);
         }

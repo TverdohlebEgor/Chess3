@@ -22,4 +22,8 @@ public class Position {
     public Position copy(){
         return new Position(x,y);
     }
+
+    public Position modified(int deltax, int deltay){
+        return new Position(x+deltax, y+deltay);
+    }
 }

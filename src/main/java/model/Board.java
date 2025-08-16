@@ -16,7 +16,9 @@ import static utils.Channels.UPDATE_VIEW;
 @Slf4j
 public class Board {
     @Getter
-    List<Piece> pieces = new ArrayList<>();
+    private List<Piece> pieces = new ArrayList<>();
+
+
     public Board(){
         addInitialPieces(WHITE);
         addInitialPieces(BLACK);
@@ -36,6 +38,17 @@ public class Board {
         }
     }
 
+    public void reset(){
+        for(int i = 0; i < 64; i++){
+            int x = i/8;
+            int y = i%8;
+            NotificationHandler.send(UPDATE_VIEW,"removePiece",new Position(x,y));
+        }
+        pieces.clear();
+        addInitialPieces(WHITE);
+        addInitialPieces(BLACK);
+    }
+
     private void setPiece(Piece piece){
        pieces.add(piece);
        NotificationHandler.send(UPDATE_VIEW,"setPiece",piece.getPosition(),piece);
@@ -53,5 +66,37 @@ public class Board {
         for(Piece piece: pieces){
             NotificationHandler.send(UPDATE_VIEW,"setPiece",piece.getPosition(),piece);
         }
+    }
+
+    @Override
+    public String toString(){
+       StringBuilder stringBuilder = new StringBuilder();
+       int counter = 0;
+       for(int y = 7; y >= 0; --y){
+           for(int x = 0; x < 8; ++x){
+                boolean pieceFounded = false;
+                Position tempPos = new Position(x,y);
+                for(Piece piece : pieces){
+                    if(piece.getPosition().equals(tempPos)){
+                        if(counter > 0){
+                            stringBuilder.append(counter);
+                            counter = 0;
+                        }
+                        pieceFounded = true;
+                        stringBuilder.append(piece);
+                    }
+                }
+                if(!pieceFounded) {
+                    counter += 1;
+                }
+           }
+           if(counter != 0){
+               stringBuilder.append(counter);
+           }
+           stringBuilder.append("/");
+           counter = 0;
+       }
+       stringBuilder.deleteCharAt(stringBuilder.length()-1);
+       return stringBuilder.toString();
     }
 }

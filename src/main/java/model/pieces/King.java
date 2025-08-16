@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.Math.abs;
+import static model.enums.PieceColorEnum.WHITE;
 
 public class King extends Piece{
     public King(PieceColorEnum color, Position pos) {
@@ -21,7 +22,16 @@ public class King extends Piece{
         if(yDistance > 1 || xDistance > 1) {
             return false;
         }
-        if(!positionInDirection().contains(newPos)){
+        boolean newPosInPossibleDirections = false;
+        for(List<Position> dirList : positionInDirection()){
+            for(Position pos: dirList){
+                if(newPos.equals(pos)){
+                    newPosInPossibleDirections = true;
+                    break;
+                }
+            }
+        }
+        if(!newPosInPossibleDirections){
             return false;
         }
         for(Piece piece : pieces){
@@ -49,5 +59,10 @@ public class King extends Piece{
             new Direction(-1,1,1),
             new Direction(-1,-1,1)
         );
+    }
+
+    @Override
+    public String toString(){
+        return getColor() == WHITE ? "K" : "k";
     }
 }

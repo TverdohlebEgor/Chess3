@@ -19,6 +19,7 @@ import static model.enums.PieceColorEnum.WHITE;
 import static utils.Channels.RETURN_COMMAND;
 import static utils.Channels.SEND_COMMAND;
 import static utils.Constant.*;
+import static utils.Util.*;
 
 @Slf4j
 public class GameEngine {
@@ -29,6 +30,9 @@ public class GameEngine {
     @Getter
     private PieceColorEnum turn = WHITE;
 
+    @Getter
+    private List<String> moves = new ArrayList<>();
+
     public GameEngine(){
         boardView = new BoardView();
         board = new Board();
@@ -36,7 +40,21 @@ public class GameEngine {
         NotificationHandler.subscribe(SEND_COMMAND,this);
     }
 
-    private void sendCommand(String inputText){
+    public GameEngine(boolean testMode) {
+        board = new Board();
+    }
+
+    public String boardStatus(){
+        return board.toString();
+    }
+
+    public void resetBoard(){
+        turn = WHITE;
+        moves.clear();
+        board.reset();
+    }
+
+    public String sendCommand(String inputText){
         inputText = inputText.trim();
         String returnText = specialCommands.getOrDefault(inputText,null);
         if(returnText != null) {
@@ -44,12 +62,16 @@ public class GameEngine {
         }
         if("rotate".equals(inputText)){
             boardView.rotateAndDraw();
-            return;
+        } else if ("boardStatus".equals(inputText)) {
+           writeToTerminal(board.toString());
+        } else if("reset".equals(inputText)){
+            board.reset();
         }
-        switch (inputText.length()){
+        return switch (inputText.length()){
             case 2 -> handleTwoCharactersCommand(inputText);
             case 3 -> handleThreeCharactesCommand(inputText);
-        }
+            default -> "";
+        };
     }
 
     private void initSpecialCommands(){
@@ -59,30 +81,33 @@ public class GameEngine {
         specialCommands.put("turn","It's "+turn.name().toLowerCase()+" turn");
     }
 
-    private void handleTwoCharactersCommand(String command){
+    private String handleTwoCharactersCommand(String command){
        String column = command.substring(0,1);
        String number = command.substring(1,2);
        Position finalPos = positionFromRowCol(column,number);
        List<Piece> movablePieces = new ArrayList<>();
        if(!legalColums.contains(column) || !legalRows.contains(number)){
            illegalMove();
-           return;
+           return "";
        }
       for(Piece piece : board.getPieces()){
-          if(piece.getColor() == turn && piece.canMove(finalPos,board.getPieces())){
+          if(piece instanceof Pawn && piece.getColor() == turn && piece.canMove(finalPos,board.getPieces())){
               movablePieces.add(piece);
           }
       }
       if(movablePieces.size() != 1){
           illegalMove();
-          return;
+          return "";
       }
       movablePieces.getFirst().setHasMoved(true);
       changeTurn();
+      String initialPos = stringFromPosition(movablePieces.getFirst().getPosition());
       board.movePiece(movablePieces.getFirst(),finalPos);
+      moves.add(command);
+      return initialPos+stringFromPosition(finalPos);
     }
 
-    private void handleThreeCharactesCommand(String command){
+    private String handleThreeCharactesCommand(String command){
         String pieceName = command.substring(0,1);
         String column = command.substring(1,2);
         String number = command.substring(2,3);
@@ -90,7 +115,7 @@ public class GameEngine {
         List<Piece> movablePieces = new ArrayList<>();
         if(!legalColums.contains(column) || !legalRows.contains(number) || !legalPieces.contains(pieceName)){
             illegalMove();
-            return;
+            return "";
         }
         for(Piece piece : board.getPieces()){
             if(
@@ -103,11 +128,14 @@ public class GameEngine {
         }
         if(movablePieces.size() != 1){
             illegalMove();
-            return;
+            return "";
         }
         movablePieces.getFirst().setHasMoved(true);
         changeTurn();
+        String initialPos = stringFromPosition(movablePieces.getFirst().getPosition());
         board.movePiece(movablePieces.getFirst(),finalPos);
+        moves.add(command);
+        return initialPos+stringFromPosition(finalPos);
     }
 
     private void illegalMove(){
@@ -116,33 +144,6 @@ public class GameEngine {
 
     private void writeToTerminal(String text){
         NotificationHandler.send(RETURN_COMMAND, "returnCommand", text);
-    }
-
-    private Position positionFromRowCol(String column, String row){
-        int x = switch (column){
-            case "a" -> 1;
-            case "b" -> 2;
-            case "c" -> 3;
-            case "d" -> 4;
-            case "e" -> 5;
-            case "f" -> 6;
-            case "g" -> 7;
-            case "h" -> 8;
-            default -> 0;
-        };
-        int y = Integer.parseInt(row);
-        return new Position(x-1,y-1);
-    }
-
-    private boolean pieceIsOfType(Piece piece, String typeName){
-        return switch (typeName){
-            case "K" -> (piece instanceof King);
-            case "B" -> (piece instanceof Bishop);
-            case "N" -> (piece instanceof Knight);
-            case "Q" -> (piece instanceof Queen);
-            case "R" -> (piece instanceof Rook);
-            default -> false;
-        };
     }
 
     private void changeTurn(){

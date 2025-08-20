@@ -13,6 +13,7 @@ application {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -27,6 +28,8 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
     implementation("org.slf4j:slf4j-api:2.0.13")
     runtimeOnly("ch.qos.logback:logback-classic:1.4.14")
+
+    implementation("com.github.bhlangonijr:chesslib:1.3.4")
 }
 
 tasks.test {

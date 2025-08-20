@@ -54,6 +54,49 @@ public class Board {
        NotificationHandler.send(UPDATE_VIEW,"setPiece",piece.getPosition(),piece);
     }
 
+    public void addPiece(String pieceName, PieceColorEnum color, Position pos){
+        Piece newPiece = null;
+        switch (pieceName) {
+            case "Q" -> newPiece = new Queen(color,pos);
+            case "N" -> newPiece = new Knight(color,pos);
+            case "B" -> newPiece = new Bishop(color,pos);
+            case "R" -> newPiece = new Rook(color,pos);
+        }
+        if(newPiece == null){
+            throw new IllegalArgumentException("Trying to create new piece but illegal name");
+        }
+        setPiece(newPiece);
+    }
+
+    public void removePiece(Position pos){
+        NotificationHandler.send(UPDATE_VIEW,"removePiece",pos);
+        for (Piece piece : pieces){
+            if(piece.getPosition().equals(pos)){
+                pieces.remove(piece);
+                break;
+            }
+        }
+    }
+
+    public boolean isOccupied(Position pos){
+        for (Piece piece : pieces){
+            if(piece.getPosition().equals(pos)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Piece pieceIn(Position pos){
+        for (Piece piece : pieces){
+            if(piece.getPosition().equals(pos)){
+                return piece;
+            }
+        }
+        return null;
+    }
+
+
     public void movePiece(Piece pieceToMove, Position finalPosition){
         Position initialPosition = pieceToMove.getPosition();
         NotificationHandler.send(UPDATE_VIEW,"removePiece",initialPosition);

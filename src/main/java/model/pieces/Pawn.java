@@ -1,78 +1,99 @@
 package model.pieces;
 
-import lombok.Setter;
+import model.Board;
 import model.Direction;
+import model.Move;
 import model.Position;
 import model.enums.PieceColorEnum;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static java.lang.Math.abs;
-import static model.enums.PieceColorEnum.BLACK;
 import static model.enums.PieceColorEnum.WHITE;
+import static utils.Util.positionInBound;
 
-public class Pawn extends Piece{
+public class Pawn extends Piece {
 
-    public Pawn(PieceColorEnum color, Position pos) {
-        super(color, pos);
-    }
+	public Pawn(PieceColorEnum color, Position pos) {
+		super(color, pos);
+	}
 
-    @Override
-    public boolean canMove(Position newPos, List<Piece> pieces){
-        int yDelta = this.getPosition().getY() - newPos.getY();
-        int xDelta = this.getPosition().getX() - newPos.getX();
-        int yDistance = abs(yDelta);
-        int xDistance = abs(xDelta);
-        if((yDistance > 2 || yDistance <= 0) || (isHasMoved() && yDistance == 2)) {
-            return false;
-        }
-        if(xDistance > 1){
-            return false;
-        }
-        if(xDistance == 1){
-            //CATTURE
-            for(Piece piece : pieces){
-                if(piece.getPosition().equals(newPos)
-                && piece.getColor() != this.getColor()
-                && yDistance == 1){
-                    return true;
-                }
-            }
-            return false;
-        }
-        for(Position pos : positionInDirection().getFirst()){
-            for(Piece piece : pieces){
-                if(piece.getPosition().equals(pos)){
-                    return false;
-                }
-            }
-        }
-        //LATO SBAGLIATO
-        if((yDelta >= 1 && getColor() == WHITE) || (yDelta <= -1 && getColor() == BLACK)){
-            return false;
-        }
-        return true;
-    }
+	@Override
+	public String getName() {
+		return "P";
+	}
 
-    @Override
-    public String getImagePath(){
-        return commonImagePath("whitePawn","blackPawn");
-    }
+	@Override
+	public List<Move> updateLegalMoves(Board board) {
+		List<Move> legalMoves = new ArrayList<>();
+		Direction pawnDir = getDirections().getFirst();
+		for (int yDistance = 1; yDistance <= pawnDir.getDistance(); ++yDistance) {
+			Position finalPossiblePos = getPosition().modified(0, yDistance * pawnDir.getY());
+			if (board.pieceIn(finalPossiblePos) == null) {
+				eventuallyAddPromotionAndAddToList(
+					legalMoves,
+					new Move(
+						finalPossiblePos.toString(),
+						getPosition().toString() + finalPossiblePos,
+						null
+					)
+				);
+			}
+		}
+		//x = 1 && x = -1
+		for (int x = 1; x >= -1; x -= 2) {
+			Position finalPossiblePos = getPosition().modified(x, pawnDir.getY());
+			if (enemyIn(finalPossiblePos, board)) {
+				eventuallyAddPromotionAndAddToList(
+					legalMoves,
+					new Move(
+						getPosition().toString().charAt(0) + "x" + finalPossiblePos,
+						getPosition().toString() + finalPossiblePos,
+						null
+					)
+				);
+			}
+		}
+		return legalMoves;
+	}
 
-    @Override
-    public List<Direction> getDirections(){
-        return List.of(
-            new Direction(
-                0,
-                this.getColor() == WHITE ? 1 : -1,
-                isHasMoved() ? 1 : 2
-            )
-        );
-    }
-    @Override
-    public String toString(){
-        return getColor() == WHITE ? "P" : "p";
-    }
+	private void eventuallyAddPromotionAndAddToList(List<Move> legalMoves, Move move) {
+		Position finalPos = Position.fromString(move.UCImove().substring(2, 4));
+		String finalPosRow = String.valueOf(move.UCImove().charAt(3));
+		if ("8".equals(finalPosRow) || "1".equals(finalPosRow)) {
+			legalMoves.add(new Move(move.SANmove() + "=Q", move.UCImove() + (getColor() == WHITE ? "Q" : "q"), new Queen(getColor(), finalPos)));
+			legalMoves.add(new Move(move.SANmove() + "=N", move.UCImove() + (getColor() == WHITE ? "N" : "n"), new Knight(getColor(), finalPos)));
+			legalMoves.add(new Move(move.SANmove() + "=B", move.UCImove() + (getColor() == WHITE ? "B" : "b"), new Bishop(getColor(), finalPos)));
+			legalMoves.add(new Move(move.SANmove() + "=R", move.UCImove() + (getColor() == WHITE ? "R" : "r"), new Rook(getColor(), finalPos)));
+		} else {
+			legalMoves.add(move);
+		}
+	}
+
+	public boolean enemyIn(Position finalPossiblePos, Board board) {
+		return positionInBound(finalPossiblePos) &&
+			board.isOccupied(finalPossiblePos) &&
+			board.pieceIn(finalPossiblePos).getColor() != this.getColor();
+	}
+
+	@Override
+	public String getImagePath() {
+		return commonImagePath("whitePawn", "blackPawn");
+	}
+
+	@Override
+	public List<Direction> getDirections() {
+		return List.of(
+			new Direction(
+				0,
+				this.getColor() == WHITE ? 1 : -1,
+				isHasMoved() ? 1 : 2
+			)
+		);
+	}
+
+	@Override
+	public String toString() {
+		return getColor() == WHITE ? "P" : "p";
+	}
 }

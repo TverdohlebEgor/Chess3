@@ -3,9 +3,10 @@ package controll;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import model.Board;
-import model.Position;
+import model.Move;
+import model.enums.MoveType;
 import model.enums.PieceColorEnum;
-import model.pieces.*;
+import model.pieces.Piece;
 import observer.NotificationHandler;
 import view.BoardView;
 
@@ -18,14 +19,13 @@ import static model.enums.PieceColorEnum.BLACK;
 import static model.enums.PieceColorEnum.WHITE;
 import static utils.Channels.RETURN_COMMAND;
 import static utils.Channels.SEND_COMMAND;
-import static utils.Constant.*;
-import static utils.Util.*;
 
 @Slf4j
 public class GameEngine {
 	private final Map<String, String> specialCommands = new HashMap<>();
 	private BoardView boardView;
 	private Board board;
+	private List<Move> legalMoves = new ArrayList<>();
 
 	@Getter
 	private PieceColorEnum turn = WHITE;
@@ -54,7 +54,7 @@ public class GameEngine {
 		board.reset();
 	}
 
-	public void sendCommand(String inputText) {
+	public String sendCommand(String inputText) {
 		inputText = inputText.trim();
 		String returnText = specialCommands.getOrDefault(inputText, null);
 		if (returnText != null) {
@@ -67,11 +67,94 @@ public class GameEngine {
 		} else if ("reset".equals(inputText)) {
 			board.reset();
 		}
-		switch (inputText.length()) {
-			case 2 -> handleTwoCharactersCommand(inputText);
-			case 3 -> handleThreeCharactesCommand(inputText);
-			case 4 -> handleFourCharactersCommand(inputText);
-		};
+		return handleMove(inputText,MoveType.SAN).UCImove();
+	}
+
+	public Move handleMove(String inputText, MoveType moveType) {
+		legalMoves.clear();
+		for (Piece piece : board.getPieces()) {
+			if (piece.getColor() == turn) {
+				legalMoves.addAll(piece.updateLegalMoves(board));
+			}
+		}
+		solveConflict(legalMoves);
+		Move toMove = null;
+		for (Move move : legalMoves) {
+			if ((moveType == MoveType.SAN && move.SANmove().equals(inputText))
+			||  (moveType == MoveType.UCI && move.UCImove().equals(inputText))) {
+				toMove = move;
+				break;
+			}
+		}
+		if (toMove == null) {
+			illegalMove();
+		} else {
+			board.move(toMove);
+			changeTurn();
+			return toMove;
+		}
+		return new Move(null,"",null);
+	}
+
+	private void solveConflict(List<Move> legalMoves) {
+		List<List<Move>> toSolveMatx = new ArrayList<>();
+		Map<Move,Boolean> visited = new HashMap<>();
+		for (Move move : legalMoves) {
+			if(Boolean.TRUE.equals(visited.getOrDefault(move,false))){
+				continue;
+			}
+			List<Move> thisList = new ArrayList<>();
+			thisList.add(move);
+			visited.put(move,true);
+			for (Move move2 : legalMoves) {
+				if (!move.equals(move2) && move.SANmove().equals(move2.SANmove())) {
+					thisList.add(move2);
+					visited.put(move2,true);
+				}
+			}
+			if (thisList.size() > 1) {
+				toSolveMatx.add(thisList);
+			}
+		}
+
+		for (List<Move> toSolve : toSolveMatx) {
+			if (toSolve.size() > 2) {
+				for (Move move : toSolve) {
+					legalMoves.remove(move);
+					legalMoves.add(
+						new Move(
+							move.SANmove().charAt(0) + move.UCImove().substring(0, 2) + move.SANmove().substring(2),
+							move.UCImove(),
+							null
+						)
+					);
+				}
+			} else if (toSolve.size() == 2){
+				legalMoves.remove(toSolve.getFirst());
+				legalMoves.remove(toSolve.getLast());
+				String iniPos1 = toSolve.getFirst().UCImove().substring(0,2);
+				String iniPos2 = toSolve.getLast().UCImove().substring(0,2);
+				if(iniPos1.charAt(0) == iniPos2.charAt(0)){
+					Move first = toSolve.getFirst();
+					legalMoves.add(addMoveWithResolvedConflict(iniPos1.charAt(1),first));
+					legalMoves.add(addMoveWithResolvedConflict(iniPos2.charAt(1),first));
+				} else{
+					Move last = toSolve.getLast();
+					legalMoves.add(addMoveWithResolvedConflict(iniPos1.charAt(0),last));
+					legalMoves.add(addMoveWithResolvedConflict(iniPos2.charAt(0),last));
+				}
+			}
+		}
+	}
+
+	private Move addMoveWithResolvedConflict(char divergenceChar, Move move){
+		return new Move(
+			String.valueOf(move.SANmove().charAt(0)) +
+				divergenceChar +
+				move.SANmove().substring(1),
+			move.UCImove(),
+			null
+		);
 	}
 
 	private void initSpecialCommands() {
@@ -79,146 +162,6 @@ public class GameEngine {
 			"\n reset -> reset the game TODO" +
 			"");
 		specialCommands.put("turn", "It's " + turn.name().toLowerCase() + " turn");
-	}
-
-	private void handleTwoCharactersCommand(String command) {
-		String column = command.substring(0, 1);
-		String number = command.substring(1, 2);
-		Position finalPos = positionFromRowCol(column, number);
-		List<Piece> movablePieces = new ArrayList<>();
-		if (!legalColums.contains(column) || !legalRows.contains(number)) {
-			illegalMove();
-			return;
-		}
-		for (Piece piece : board.getPieces()) {
-			if (piece instanceof Pawn && piece.getColor() == turn && piece.canMove(finalPos, board.getPieces())) {
-				movablePieces.add(piece);
-			}
-		}
-
-		if (board.isOccupied(finalPos) || movablePieces.size() != 1) {
-			illegalMove();
-			return ;
-		}
-		move(movablePieces.getFirst(), finalPos);
-		moves.add(command);
-	}
-
-	private void handleThreeCharactesCommand(String command) {
-		if ("O-O".equals(command)) {
-			handleShortCastle();
-			return;
-		}
-		String pieceName = String.valueOf(command.charAt(0));
-		String column = command.substring(1, 2);
-		String number = command.substring(2, 3);
-		Position finalPos = positionFromRowCol(column, number);
-		List<Piece> movablePieces = new ArrayList<>();
-		if (!legalColums.contains(column) || !legalRows.contains(number) || !legalPieces.contains(pieceName)) {
-			illegalMove();
-			return;
-		}
-		for (Piece piece : board.getPieces()) {
-			if (
-				pieceIsOfType(piece, pieceName) &&
-					piece.getColor() == turn &&
-					piece.canMove(finalPos, board.getPieces())
-			) {
-				movablePieces.add(piece);
-			}
-		}
-		if (board.isOccupied(finalPos) || movablePieces.size() != 1) {
-			illegalMove();
-			return;
-		}
-
-		move(movablePieces.getFirst(), finalPos);
-
-		moves.add(command);
-	}
-
-	private void handleFourCharactersCommand(String command) {
-		List<Piece> movablePieces = new ArrayList<>();
-		if (command.charAt(1) == 'x') {
-			//2. Piece Capture without Disambiguation
-			//3. Pawn Capture without Disambiguation
-			String pieceName = command.substring(0, 1);
-			String column = command.substring(2, 3);
-			String number = command.substring(3, 4);
-			Position finalPos = positionFromRowCol(column, number);
-			for (Piece piece : board.getPieces()) {
-				if (
-					pieceIsOfType(piece, pieceName) &&
-					piece.getColor() == turn &&
-					piece.canMove(finalPos, board.getPieces()) &&
-					board.isOccupied(finalPos) &&
-					board.pieceIn(finalPos).getColor() != piece.getColor()
-				) {
-					movablePieces.add(piece);
-				}
-			}
-			board.removePiece(finalPos);
-			if (movablePieces.size() != 1) {
-				illegalMove();
-				return;
-			}
-			String initialPos = stringFromPosition(movablePieces.getFirst().getPosition());
-			move(movablePieces.getFirst(), finalPos);
-			moves.add(command);
-		} else if(command.charAt(2) == '='){
-			String desideredPromotionPiece = String.valueOf(command.charAt(3));
-			//5. Pawn Promotion (Non-Capture)
-			String column = String.valueOf(command.charAt(0));
-			String number = String.valueOf(command.charAt(1));
-			Position finalPos = positionFromRowCol(column,number);
-			if(!number.equals("1") && !number.equals("8")
-			|| board.isOccupied(finalPos)
-			|| !legalPromotablePieces.contains(desideredPromotionPiece)){
-				illegalMove();
-				return;
-			}
-			for (Piece piece : board.getPieces()) {
-				if (piece instanceof Pawn && piece.getColor() == turn && piece.canMove(finalPos, board.getPieces())) {
-					movablePieces.add(piece);
-				}
-			}
-			if(movablePieces.size() != 1){
-				illegalMove();
-				return;
-			}
-
-			board.removePiece(movablePieces.getFirst().getPosition());
-			board.addPiece(desideredPromotionPiece,turn,finalPos);
-
-			moves.add(command);
-		}
-		//1. Piece Move with Disambiguation
-	}
-
-	private void handleShortCastle() {
-		String row = "1";
-		if(turn == BLACK){
-			row = "8";
-		}
-		Piece king = board.pieceIn(positionFromRowCol("e", row));
-		Piece rook = board.pieceIn(positionFromRowCol("h", row));
-		if (king != null
-			&& rook != null
-			&& !king.isHasMoved()
-			&& !rook.isHasMoved()
-			&& !board.isOccupied(positionFromRowCol("f", row))
-			&& !board.isOccupied(positionFromRowCol("g", row))) {
-			move(king, positionFromRowCol("g", row));
-			move(rook, positionFromRowCol("f", row));
-			changeTurn();
-		}
-		illegalMove();
-	}
-
-	private void move(Piece piece, Position finalPos) {
-		piece.setHasMoved(true);
-		changeTurn();
-		board.movePiece(piece, finalPos);
 	}
 
 	private void illegalMove() {

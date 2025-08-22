@@ -9,6 +9,13 @@ import java.util.List;
 public class KingTest extends PieceTest {
 	@Test
 	public void movement() {
-		generalPieceTest(List.of("e4","e5","Bd3","Bd6","Nf3","Nf6","O-O","O-O"));
+		correctMovesTest(List.of("e3","e6","Ke2","Ke7"));
+	}
+
+	@Test
+	public void castling() {
+		correctMovesTest(List.of("e4","e5","Nf3","Nc6","Bb5","Qf6","O-O","d6","a3","Bg4","a4","O-O-O"));
+
+		correctMovesTest(List.of("d4","e5","Qd3","Bc5","Be3","Nf6","Nc3","O-O","O-O-O"));
 	}
 }

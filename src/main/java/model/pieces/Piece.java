@@ -37,10 +37,6 @@ public abstract class Piece {
 		this.position = position;
 	}
 
-    public PieceColorEnum enemyColor(){
-        return getColor() == WHITE ? BLACK : WHITE;
-    }
-
 	public abstract List<Direction> getDirections();
 
 	public abstract String getName();

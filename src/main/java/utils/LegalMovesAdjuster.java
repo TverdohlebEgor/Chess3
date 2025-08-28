@@ -99,7 +99,7 @@ public class LegalMovesAdjuster {
 
             for(Piece piece : allOurPieces){
                 for(Position targetedPos : piece.updateLegalMoves(board).stream().map(Move::finalPosition).toList()){
-                    if(board.getKing(movingPiece.enemyColor()).getPosition().equals(targetedPos)){
+                    if(board.getKing(movingPiece.getColor().enemy()).getPosition().equals(targetedPos)){
                         String charToAdd = moveIsCheckMate(move,board.copy()) ? "#" : "+";
                         legalMoves.remove(x);
                         legalMoves.add(x,new Move(

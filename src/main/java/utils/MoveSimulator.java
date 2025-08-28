@@ -17,9 +17,8 @@ import static utils.LegalMovesAdjuster.removeDangareousForKingMoves;
 public class MoveSimulator {
 
     public static boolean moveLetKingInDanger(Move move, PieceColorEnum kingColor, Board boardCopy){
-        PieceColorEnum enemyColor = kingColor == WHITE ? BLACK : WHITE;
         boardCopy.move(move);
-        for(Piece piece : boardCopy.getPieces().stream().filter(p -> p.getColor() == enemyColor).toList()){
+        for(Piece piece : boardCopy.getPieces().stream().filter(p -> p.getColor() == kingColor.enemy()).toList()){
             for(Position targetedPos : piece.updateLegalMoves(boardCopy).stream().map(Move::finalPosition).toList()){
                 if(boardCopy.getKing(kingColor).getPosition().equals(targetedPos)){
                     return true;
@@ -34,7 +33,7 @@ public class MoveSimulator {
         Piece movingPiece = boardCopy.pieceIn(move.finalPosition());
 
         List<Move> simulatedLegalMoves = new ArrayList<>();
-        for(Piece piece : boardCopy.getPieces().stream().filter(p -> p.getColor() == movingPiece.enemyColor()).toList()){
+        for(Piece piece : boardCopy.getPieces().stream().filter(p -> p.getColor() == movingPiece.getColor().enemy()).toList()){
             simulatedLegalMoves.addAll(piece.updateLegalMoves(boardCopy));
         }
 

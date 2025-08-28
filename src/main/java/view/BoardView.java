@@ -72,7 +72,7 @@ public class BoardView {
 	}
 
 	public void rotate() {
-		boardPerspective = boardPerspective == WHITE ? BLACK : WHITE;
+		boardPerspective = boardPerspective.enemy();
 	}
 
 	public void drawConsideringPerspective(){

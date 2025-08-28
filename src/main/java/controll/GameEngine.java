@@ -113,6 +113,6 @@ public class GameEngine {
 	}
 
 	private void changeTurn() {
-		turn = (turn == WHITE ? BLACK : WHITE);
+		turn = turn.enemy();
 	}
 }

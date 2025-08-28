@@ -58,13 +58,12 @@ public class Pawn extends Piece {
 	}
 
 	private void eventuallyAddPromotionAndAddToList(List<Move> legalMoves, Move move) {
-		Position finalPos = Position.fromString(move.UCImove().substring(2, 4));
 		String finalPosRow = String.valueOf(move.UCImove().charAt(3));
 		if ("8".equals(finalPosRow) || "1".equals(finalPosRow)) {
-			legalMoves.add(new Move(move.SANmove() + "=Q", move.UCImove() + (getColor() == WHITE ? "Q" : "q"), new Queen(getColor(), finalPos)));
-			legalMoves.add(new Move(move.SANmove() + "=N", move.UCImove() + (getColor() == WHITE ? "N" : "n"), new Knight(getColor(), finalPos)));
-			legalMoves.add(new Move(move.SANmove() + "=B", move.UCImove() + (getColor() == WHITE ? "B" : "b"), new Bishop(getColor(), finalPos)));
-			legalMoves.add(new Move(move.SANmove() + "=R", move.UCImove() + (getColor() == WHITE ? "R" : "r"), new Rook(getColor(), finalPos)));
+			legalMoves.add(new Move(move.SANmove() + "=Q", move.UCImove() + (getColor() == WHITE ? "Q" : "q"), new Queen(getColor(), move.finalPosition())));
+			legalMoves.add(new Move(move.SANmove() + "=N", move.UCImove() + (getColor() == WHITE ? "N" : "n"), new Knight(getColor(), move.finalPosition())));
+			legalMoves.add(new Move(move.SANmove() + "=B", move.UCImove() + (getColor() == WHITE ? "B" : "b"), new Bishop(getColor(), move.finalPosition())));
+			legalMoves.add(new Move(move.SANmove() + "=R", move.UCImove() + (getColor() == WHITE ? "R" : "r"), new Rook(getColor(), move.finalPosition())));
 		} else {
 			legalMoves.add(move);
 		}

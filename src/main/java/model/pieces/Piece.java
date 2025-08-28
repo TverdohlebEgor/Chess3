@@ -92,13 +92,7 @@ public abstract class Piece {
 			int tempDis = 0;
 			tempPos.addToX(dir.getX());
 			tempPos.addToY(dir.getY());
-			while (
-				tempPos.getY() >= 0 &&
-					tempPos.getX() >= 0 &&
-					tempPos.getY() < 8 &&
-					tempPos.getX() < 8 &&
-					tempDis < dir.getDistance()
-			) {
+			while (positionInBound(tempPos) && tempDis < dir.getDistance()) {
 				tempDis += 1;
 				directionList.add(tempPos.copy());
 				tempPos.addToX(dir.getX());

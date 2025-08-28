@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static model.enums.PieceColorEnum.BLACK;
 import static model.enums.PieceColorEnum.WHITE;
 import static utils.Channels.RETURN_COMMAND;
 import static utils.Channels.SEND_COMMAND;

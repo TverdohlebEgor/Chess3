@@ -105,20 +105,18 @@ public class Board {
 
 
 	public void move(Move move) {
-		Position initialPos = Position.fromString(move.UCImove().substring(0, 2));
-		Position finalPos = Position.fromString(move.UCImove().substring(2, 4));
-		if (isOccupied(finalPos)) {
-			removePiece(finalPos);
+		if (isOccupied(move.finalPosition())) {
+			removePiece(move.finalPosition());
 		}
 		if (move.addPiece() != null) {
-			removePiece(initialPos);
+			removePiece(move.initialPosition());
 			setPiece(move.addPiece());
 		} else {
 			handlingCastling(move);
             handleChecks(move);
-            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", initialPos);
-			Piece pieceToMove = pieceIn(initialPos);
-			pieceToMove.setPosition(finalPos);
+            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", move.initialPosition());
+			Piece pieceToMove = pieceIn(move.initialPosition());
+			pieceToMove.setPosition(move.finalPosition());
 			pieceToMove.setHasMoved(true);
 		}
         if(!isCopy) updateView();

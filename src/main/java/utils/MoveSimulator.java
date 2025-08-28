@@ -10,7 +10,6 @@ import model.pieces.Piece;
 import java.util.ArrayList;
 import java.util.List;
 
-import static model.enums.PieceColorEnum.*;
 import static utils.LegalMovesAdjuster.removeDangareousForKingMoves;
 
 @UtilityClass

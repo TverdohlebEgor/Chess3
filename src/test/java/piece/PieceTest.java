@@ -41,8 +41,8 @@ public class PieceTest {
 
 				String moveString = "Move:" + move;
 				log.info(moveString);
-				log.info("My Engine :" + myFen);
-				log.info("Stockfish :" + stockFen);
+                log.info("My Engine :{}", myFen);
+                log.info("Stockfish :{}", stockFen);
 				if (!myFen.equals(stockFen)) {
 					logErrorFEN(lastCorrect, myFen, stockFen, moveString);
 				}

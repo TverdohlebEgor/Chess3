@@ -18,11 +18,23 @@ public class Board {
 	@Getter
 	private List<Piece> pieces = new ArrayList<>();
 
+    @Getter
+    private boolean isCheck = false;
+
+    private boolean isCopy = false;
+
 
 	public Board() {
 		addInitialPieces(WHITE);
 		addInitialPieces(BLACK);
+        this.isCopy = false;
 	}
+
+    public Board(List<Piece> pieces, boolean isCheck){
+        this.pieces = pieces;
+        this.isCheck = isCheck;
+        this.isCopy = true;
+    }
 
 	private void addInitialPieces(PieceColorEnum color) {
 		setPiece(new Rook(color, new Position(0, 7 - (color == WHITE ? 7 : 0))));
@@ -42,7 +54,7 @@ public class Board {
 		for (int i = 0; i < 64; i++) {
 			int x = i / 8;
 			int y = i % 8;
-			NotificationHandler.send(UPDATE_VIEW, "removePiece", new Position(x, y));
+            if(!isCopy)NotificationHandler.send(UPDATE_VIEW, "removePiece", new Position(x, y));
 		}
 		pieces.clear();
 		addInitialPieces(WHITE);
@@ -51,11 +63,11 @@ public class Board {
 
 	private void setPiece(Piece piece) {
 		pieces.add(piece);
-		NotificationHandler.send(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
+        if(!isCopy)NotificationHandler.send(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
 	}
 
 	public void removePiece(Position pos) {
-		NotificationHandler.send(UPDATE_VIEW, "removePiece", pos);
+        if(!isCopy)NotificationHandler.send(UPDATE_VIEW, "removePiece", pos);
 		for (Piece piece : pieces) {
 			if (piece.getPosition().equals(pos)) {
 				pieces.remove(piece);
@@ -103,45 +115,58 @@ public class Board {
 			setPiece(move.addPiece());
 		} else {
 			handlingCastling(move);
-			NotificationHandler.send(UPDATE_VIEW, "removePiece", initialPos);
+            handleChecks(move);
+            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", initialPos);
 			Piece pieceToMove = pieceIn(initialPos);
 			pieceToMove.setPosition(finalPos);
 			pieceToMove.setHasMoved(true);
 		}
-		updateView();
+        if(!isCopy) updateView();
 	}
 
 	private void handlingCastling(Move move) {
 		Rook rook;
 		if (move.UCImove().equals("e1c1")) {
 			rook = (Rook) pieceIn(new Position(0, 0));
-			NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
+			if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
 			rook.setPosition(Position.fromString("d1"));
 			rook.setHasMoved(true);
 		} else if (move.UCImove().equals("e1g1")) {
 			rook = (Rook) pieceIn(new Position(7, 0));
-			NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
+            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
 			rook.setPosition(Position.fromString("f1"));
 			rook.setHasMoved(true);
 		} else if (move.UCImove().equals("e8c8")) {
 			rook = (Rook) pieceIn(new Position(0, 7));
-			NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
+            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
 			rook.setPosition(Position.fromString("d8"));
 			rook.setHasMoved(true);
 		} else if (move.UCImove().equals("e8g8")) {
 			rook = (Rook) pieceIn(new Position(7, 7));
-			NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
+            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
 			rook.setPosition(Position.fromString("f8"));
 			rook.setHasMoved(true);
 		}
 	}
 
 	private void updateView() {
-		NotificationHandler.send(UPDATE_VIEW, "drawBoard");
+        if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "drawBoard");
 		for (Piece piece : pieces) {
-			NotificationHandler.send(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
+            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
 		}
 	}
+
+    private void handleChecks(Move move){
+        this.isCheck = move.SANmove().endsWith("+");
+    }
+
+    public Board copy(){
+        List<Piece> piecesCopy = new ArrayList<>();
+        for(Piece piece : pieces){
+            piecesCopy.add(piece.copy());
+        }
+        return new Board(piecesCopy,isCheck);
+    }
 
 	@Override
 	public String toString() {

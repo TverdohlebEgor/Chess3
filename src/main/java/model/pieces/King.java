@@ -50,6 +50,9 @@ public class King extends Piece {
 		return "K";
 	}
 
+    @Override
+    public King copy(){ return new King(getColor(),getPosition().copy());}
+
 	@Override
 	public String getImagePath() {
 		return commonImagePath("whiteKing", "blackKing");

@@ -1,14 +1,10 @@
 package observer;
 
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NotificationHandler {
     private static final Logger log = LoggerFactory.getLogger(NotificationHandler.class);
@@ -16,8 +12,11 @@ public class NotificationHandler {
 
     private static final Map<Class<?>, Class<?>> WRAPPER_TO_PRIMITIVE_MAP = new HashMap<>();
 
-    @Setter
     private static boolean enabled = true;
+
+    public static void setEnabled(boolean enabled) {
+        NotificationHandler.enabled = enabled;
+    }
 
     static {
         WRAPPER_TO_PRIMITIVE_MAP.put(Boolean.class, boolean.class);
@@ -136,7 +135,7 @@ public class NotificationHandler {
             }
         } catch (Exception e) {
             log.warn("The object {} doesn't contain method {}", lobj, functionName);
-            log.warn(e.getStackTrace().toString());
+            log.warn(Arrays.toString(e.getStackTrace()));
         }
     }
 

@@ -10,7 +10,12 @@ public class RookTest extends PieceTest {
 	@Test
 	public void movement() {
 		correctMovesTest(List.of("a4", "a5","h4","h5","Ra3","Ra6","Rd3","Rd6"));
-		correctMovesTest(List.of("a4", "a5","h4","h5","Ra3","Ra6","Rb4","Ra4","Rb3"));
+		correctMovesTest(List.of("a4", "a5","h4","h5","Ra3","Ra6","Rb3","Rhh6","Rhh3"));
 		correctMovesTest(List.of("a4","a5","Ra3","Ra6","Rg3","Re6","Rg5","Re4","Rd5","Rg4","Rd3","Rb4","Rd5","Rh4","Rg5","Rb4","Rg4","Rb5","Rb4","Re5","Rb3","Rg5","Re3","Rd5","Re4","Rc5"));
 	}
+
+    @Test
+    public void check() {
+        correctMovesTest(List.of("a4","e5","Ra3","e4","a5","e3","Rxe3+"));
+    }
 }

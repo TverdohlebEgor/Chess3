@@ -61,6 +61,9 @@ public class Knight extends Piece {
 		return commonImagePath("whiteKnight", "blackKnight");
 	}
 
+    @Override
+    public Knight copy(){ return new Knight(getColor(),getPosition().copy());}
+
 	@Override
 	public List<Direction> getDirections() {
 		return new ArrayList<>();

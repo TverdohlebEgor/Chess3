@@ -19,6 +19,7 @@ import static model.enums.PieceColorEnum.BLACK;
 import static model.enums.PieceColorEnum.WHITE;
 import static utils.Channels.RETURN_COMMAND;
 import static utils.Channels.SEND_COMMAND;
+import static utils.LegalMovesAdjuster.*;
 
 @Slf4j
 public class GameEngine {
@@ -60,13 +61,11 @@ public class GameEngine {
 		if (returnText != null) {
 			writeToTerminal(returnText);
 		}
-		if ("rotate".equals(inputText)) {
-			boardView.rotateAndDraw();
-		} else if ("boardStatus".equals(inputText)) {
-			writeToTerminal(board.toString());
-		} else if ("reset".equals(inputText)) {
-			board.reset();
-		}
+        switch (inputText) {
+            case "rotate" -> boardView.rotateAndDraw();
+            case "boardStatus" -> writeToTerminal(board.toString());
+            case "reset" -> board.reset();
+        }
 		return handleMove(inputText,MoveType.SAN).UCImove();
 	}
 
@@ -78,6 +77,8 @@ public class GameEngine {
 			}
 		}
 		solveConflict(legalMoves);
+        addChecks(legalMoves,board);
+        removeDangareousForKingMoves(legalMoves,board);
 		Move toMove = null;
 		for (Move move : legalMoves) {
 			if ((moveType == MoveType.SAN && move.SANmove().equals(inputText))
@@ -94,67 +95,6 @@ public class GameEngine {
 			return toMove;
 		}
 		return new Move(null,"",null);
-	}
-
-	private void solveConflict(List<Move> legalMoves) {
-		List<List<Move>> toSolveMatx = new ArrayList<>();
-		Map<Move,Boolean> visited = new HashMap<>();
-		for (Move move : legalMoves) {
-			if(Boolean.TRUE.equals(visited.getOrDefault(move,false))){
-				continue;
-			}
-			List<Move> thisList = new ArrayList<>();
-			thisList.add(move);
-			visited.put(move,true);
-			for (Move move2 : legalMoves) {
-				if (!move.equals(move2) && move.SANmove().equals(move2.SANmove())) {
-					thisList.add(move2);
-					visited.put(move2,true);
-				}
-			}
-			if (thisList.size() > 1) {
-				toSolveMatx.add(thisList);
-			}
-		}
-
-		for (List<Move> toSolve : toSolveMatx) {
-			if (toSolve.size() > 2) {
-				for (Move move : toSolve) {
-					legalMoves.remove(move);
-					legalMoves.add(
-						new Move(
-							move.SANmove().charAt(0) + move.UCImove().substring(0, 2) + move.SANmove().substring(2),
-							move.UCImove(),
-							null
-						)
-					);
-				}
-			} else if (toSolve.size() == 2){
-				legalMoves.remove(toSolve.getFirst());
-				legalMoves.remove(toSolve.getLast());
-				String iniPos1 = toSolve.getFirst().UCImove().substring(0,2);
-				String iniPos2 = toSolve.getLast().UCImove().substring(0,2);
-				if(iniPos1.charAt(0) == iniPos2.charAt(0)){
-					Move first = toSolve.getFirst();
-					legalMoves.add(addMoveWithResolvedConflict(iniPos1.charAt(1),first));
-					legalMoves.add(addMoveWithResolvedConflict(iniPos2.charAt(1),first));
-				} else{
-					Move last = toSolve.getLast();
-					legalMoves.add(addMoveWithResolvedConflict(iniPos1.charAt(0),last));
-					legalMoves.add(addMoveWithResolvedConflict(iniPos2.charAt(0),last));
-				}
-			}
-		}
-	}
-
-	private Move addMoveWithResolvedConflict(char divergenceChar, Move move){
-		return new Move(
-			String.valueOf(move.SANmove().charAt(0)) +
-				divergenceChar +
-				move.SANmove().substring(1),
-			move.UCImove(),
-			null
-		);
 	}
 
 	private void initSpecialCommands() {

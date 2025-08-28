@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static model.enums.PieceColorEnum.BLACK;
+import static model.enums.PieceColorEnum.WHITE;
 import static utils.Constant.piecesImageCommonPath;
 import static utils.Util.positionInBound;
 
@@ -34,6 +36,10 @@ public abstract class Piece {
 		this.color = color;
 		this.position = position;
 	}
+
+    public PieceColorEnum enemyColor(){
+        return getColor() == WHITE ? BLACK : WHITE;
+    }
 
 	public abstract List<Direction> getDirections();
 
@@ -72,10 +78,12 @@ public abstract class Piece {
 
 	public abstract String getImagePath();
 
+    public abstract Piece copy();
+
 	String commonImagePath(String nameWhite, String nameBlack) {
 		return new File(
 			piecesImageCommonPath,
-			(this.getColor() == PieceColorEnum.WHITE ? nameWhite : nameBlack) + ".png")
+			(this.getColor() == WHITE ? nameWhite : nameBlack) + ".png")
 			.toPath()
 			.toString();
 	}

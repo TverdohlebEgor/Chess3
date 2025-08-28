@@ -76,6 +76,9 @@ public class Pawn extends Piece {
 			board.pieceIn(finalPossiblePos).getColor() != this.getColor();
 	}
 
+    @Override
+    public Pawn copy(){ return new Pawn(getColor(),getPosition().copy());}
+
 	@Override
 	public String getImagePath() {
 		return commonImagePath("whitePawn", "blackPawn");

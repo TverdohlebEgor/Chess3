@@ -24,6 +24,9 @@ public class Queen extends Piece{
     }
 
     @Override
+    public Queen copy(){ return new Queen (getColor(),getPosition().copy());}
+
+    @Override
     public String getImagePath(){
         return commonImagePath("whiteQueen","blackQueen");
     }

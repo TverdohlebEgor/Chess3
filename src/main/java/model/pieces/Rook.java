@@ -20,6 +20,9 @@ public class Rook extends Piece{
     }
 
     @Override
+    public Rook copy(){ return new Rook (getColor(),getPosition().copy());}
+
+    @Override
     public String getImagePath(){
         return commonImagePath("whiteRook","blackRook");
     }

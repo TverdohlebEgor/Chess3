@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static piece.PieceTest.correctMovesTest;
+
 @Slf4j
-public class RookTest extends PieceTest {
+public class RookTest {
 	@Test
 	public void movement() {
 		correctMovesTest(List.of("a4", "a5","h4","h5","Ra3","Ra6","Rd3","Rd6"));

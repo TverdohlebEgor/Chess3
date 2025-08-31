@@ -29,7 +29,7 @@ public class Pawn extends Piece {
 		Direction pawnDir = getDirections().getFirst();
 		for (int yDistance = 1; yDistance <= pawnDir.getDistance(); ++yDistance) {
 			Position finalPossiblePos = getPosition().modified(0, yDistance * pawnDir.getY());
-			if (board.pieceIn(finalPossiblePos) == null) {
+			if (positionInBound(finalPossiblePos) && board.pieceIn(finalPossiblePos) == null) {
 				eventuallyAddPromotionAndAddToList(
 					legalMoves,
 					new Move(
@@ -43,8 +43,8 @@ public class Pawn extends Piece {
 		//x = 1 && x = -1
 		for (int x = 1; x >= -1; x -= 2) {
 			Position finalPossiblePos = getPosition().modified(x, pawnDir.getY());
-			if (enemyIn(finalPossiblePos, board)) {
-				eventuallyAddPromotionAndAddToList(
+			if (positionInBound(finalPossiblePos) && enemyIn(finalPossiblePos, board)) {
+                eventuallyAddPromotionAndAddToList(
 					legalMoves,
 					new Move(
 						getPosition().toString().charAt(0) + "x" + finalPossiblePos,

@@ -70,26 +70,6 @@ public class Knight extends Piece {
 	}
 
 	@Override
-	List<List<Position>> positionInDirection() {
-		List<List<Position>> result = new ArrayList<>();
-		Position tempoPos = this.getPosition().copy();
-		for (int deltaX = -2, turn = 0; turn < 4; turn = turn + 1, deltaX = (turn % 2 == 1) ? -deltaX : 1) {
-			int deltaY = abs(deltaX) == 2 ? 1 : 2;
-			if (isLegalPosition(tempoPos.modified(deltaX, deltaY))) {
-				result.add(List.of(tempoPos.modified(deltaX, deltaY)));
-			}
-			if (isLegalPosition(tempoPos.modified(deltaX, -deltaY))) {
-				result.add(List.of(tempoPos.modified(deltaX, -deltaY)));
-			}
-		}
-		return result;
-	}
-
-	private boolean isLegalPosition(Position pos) {
-		return (pos.getX() >= 0 && pos.getY() < 8 && pos.getY() >= 0 && pos.getX() < 8);
-	}
-
-	@Override
 	public String toString() {
 		return getColor() == WHITE ? "N" : "n";
 	}

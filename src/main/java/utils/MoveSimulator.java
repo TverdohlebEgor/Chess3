@@ -19,9 +19,12 @@ public class MoveSimulator {
         boardCopy.move(move);
         for(Piece piece : boardCopy.getPieces().stream().filter(p -> p.getColor() == kingColor.enemy()).toList()){
             for(Position targetedPos : piece.updateLegalMoves(boardCopy).stream().map(Move::finalPosition).toList()){
-                if(boardCopy.getKing(kingColor).getPosition().equals(targetedPos)){
-                    return true;
-                }
+                try {
+                    if(boardCopy.getKing(kingColor).getPosition().equals(targetedPos)){
+                        return true;
+                    }
+                } catch (Exception ignored){}
+
             }
         }
         return false;

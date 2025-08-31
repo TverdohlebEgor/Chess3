@@ -28,6 +28,10 @@ public abstract class Piece {
 	@Setter
 	private Position position;
 
+    public void setPositionFromString(String posName){
+       this.position = Position.fromString(posName);
+    }
+
 	public Position getPosition() {
 		return position.copy();
 	}
@@ -82,24 +86,5 @@ public abstract class Piece {
 			(this.getColor() == WHITE ? nameWhite : nameBlack) + ".png")
 			.toPath()
 			.toString();
-	}
-
-	List<List<Position>> positionInDirection() {
-		List<List<Position>> result = new ArrayList<>();
-		for (Direction dir : getDirections()) {
-			Position tempPos = this.getPosition().copy();
-			List<Position> directionList = new ArrayList<>();
-			int tempDis = 0;
-			tempPos.addToX(dir.getX());
-			tempPos.addToY(dir.getY());
-			while (positionInBound(tempPos) && tempDis < dir.getDistance()) {
-				tempDis += 1;
-				directionList.add(tempPos.copy());
-				tempPos.addToX(dir.getX());
-				tempPos.addToY(dir.getY());
-			}
-			result.add(directionList);
-		}
-		return result;
 	}
 }

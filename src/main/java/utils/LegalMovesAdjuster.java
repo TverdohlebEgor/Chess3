@@ -47,10 +47,8 @@ public class LegalMovesAdjuster {
                 for (Move move : toSolve) {
                     legalMoves.remove(move);
                     legalMoves.add(
-                            new Move(
-                                    move.SANmove().charAt(0) + move.UCImove().substring(0, 2) + move.SANmove().substring(2),
-                                    move.UCImove(),
-                                    null
+                            move.copy(
+                                    move.SANmove().charAt(0) + move.UCImove().substring(0, 2) + move.SANmove().substring(2)
                             )
                     );
                 }
@@ -73,12 +71,10 @@ public class LegalMovesAdjuster {
     }
 
     private static Move addMoveWithResolvedConflict(char divergenceChar, Move move){
-        return new Move(
+        return move.copy(
                 String.valueOf(move.SANmove().charAt(0)) +
                         divergenceChar +
-                        move.SANmove().substring(1),
-                move.UCImove(),
-                null
+                        move.SANmove().substring(1)
         );
     }
 
@@ -102,11 +98,11 @@ public class LegalMovesAdjuster {
                     if(board.getKing(movingPiece.getColor().enemy()).getPosition().equals(targetedPos)){
                         String charToAdd = moveIsCheckMate(move,board.copy()) ? "#" : "+";
                         legalMoves.remove(x);
-                        legalMoves.add(x,new Move(
-                                move.SANmove()+charToAdd,
-                                move.UCImove(),
-                                move.addPiece()
-                        ));
+                        legalMoves.add(x,
+                            move.copy(
+                                move.SANmove()+charToAdd
+                            )
+                        );
                     }
                 }
             }

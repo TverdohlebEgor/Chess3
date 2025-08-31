@@ -8,6 +8,7 @@ import observer.NotificationHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static model.enums.PieceColorEnum.BLACK;
 import static model.enums.PieceColorEnum.WHITE;
@@ -23,28 +24,34 @@ public class Board {
 
     private boolean isCopy = false;
 
+    public Board(boolean isCopy){
+        this.isCopy = isCopy;
+        addInitialPieces(WHITE);
+        addInitialPieces(BLACK);
+    }
 
 	public Board() {
+        this.isCopy = false;
 		addInitialPieces(WHITE);
 		addInitialPieces(BLACK);
-        this.isCopy = false;
 	}
 
     public Board(List<Piece> pieces, boolean isCheck){
+        this.isCopy = true;
         this.pieces = pieces;
         this.isCheck = isCheck;
-        this.isCopy = true;
     }
 
 	private void addInitialPieces(PieceColorEnum color) {
-		setPiece(new Rook(color, new Position(0, 7 - (color == WHITE ? 7 : 0))));
-		setPiece(new Rook(color, new Position(7, 7 - (color == WHITE ? 7 : 0))));
-		setPiece(new Knight(color, new Position(1, 7 - (color == WHITE ? 7 : 0))));
-		setPiece(new Knight(color, new Position(6, 7 - (color == WHITE ? 7 : 0))));
-		setPiece(new Bishop(color, new Position(2, 7 - (color == WHITE ? 7 : 0))));
-		setPiece(new Bishop(color, new Position(5, 7 - (color == WHITE ? 7 : 0))));
-		setPiece(new King(color, new Position(4, 7 - (color == WHITE ? 7 : 0))));
-		setPiece(new Queen(color, new Position(3, 7 - (color == WHITE ? 7 : 0))));
+        int row = 7 - (color == WHITE ? 7 : 0);
+		setPiece(new Rook(color, new Position(0, row)));
+		setPiece(new Rook(color, new Position(7, row)));
+		setPiece(new Knight(color, new Position(1, row)));
+		setPiece(new Knight(color, new Position(6, row)));
+		setPiece(new Bishop(color, new Position(2, row)));
+		setPiece(new Bishop(color, new Position(5, row)));
+		setPiece(new King(color, new Position(4, row)));
+		setPiece(new Queen(color, new Position(3, row)));
 		for (int x = 0; x < 8; x++) {
 			setPiece(new Pawn(color, new Position(x, 7 - (color == WHITE ? 6 : 1))));
 		}
@@ -54,7 +61,7 @@ public class Board {
 		for (int i = 0; i < 64; i++) {
 			int x = i / 8;
 			int y = i % 8;
-            if(!isCopy)NotificationHandler.send(UPDATE_VIEW, "removePiece", new Position(x, y));
+            sendNotification(UPDATE_VIEW, "removePiece", new Position(x, y));
 		}
 		pieces.clear();
 		addInitialPieces(WHITE);
@@ -63,11 +70,11 @@ public class Board {
 
 	private void setPiece(Piece piece) {
 		pieces.add(piece);
-        if(!isCopy)NotificationHandler.send(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
+        sendNotification(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
 	}
 
 	public void removePiece(Position pos) {
-        if(!isCopy)NotificationHandler.send(UPDATE_VIEW, "removePiece", pos);
+        sendNotification(UPDATE_VIEW, "removePiece", pos);
 		for (Piece piece : pieces) {
 			if (piece.getPosition().equals(pos)) {
 				pieces.remove(piece);
@@ -84,6 +91,10 @@ public class Board {
 		}
 		return false;
 	}
+
+    public Piece pieceIn(String posName){
+        return pieceIn(Position.fromString(posName));
+    }
 
 	public Piece pieceIn(Position pos) {
 		for (Piece piece : pieces) {
@@ -114,43 +125,38 @@ public class Board {
 		} else {
 			handlingCastling(move);
             handleChecks(move);
-            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", move.initialPosition());
+            sendNotification(UPDATE_VIEW, "removePiece", move.initialPosition());
 			Piece pieceToMove = pieceIn(move.initialPosition());
 			pieceToMove.setPosition(move.finalPosition());
 			pieceToMove.setHasMoved(true);
 		}
-        if(!isCopy) updateView();
+        updateView();
 	}
 
 	private void handlingCastling(Move move) {
 		Rook rook;
-		if (move.UCImove().equals("e1c1")) {
-			rook = (Rook) pieceIn(new Position(0, 0));
-			if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
-			rook.setPosition(Position.fromString("d1"));
-			rook.setHasMoved(true);
-		} else if (move.UCImove().equals("e1g1")) {
-			rook = (Rook) pieceIn(new Position(7, 0));
-            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
-			rook.setPosition(Position.fromString("f1"));
-			rook.setHasMoved(true);
-		} else if (move.UCImove().equals("e8c8")) {
-			rook = (Rook) pieceIn(new Position(0, 7));
-            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
-			rook.setPosition(Position.fromString("d8"));
-			rook.setHasMoved(true);
-		} else if (move.UCImove().equals("e8g8")) {
-			rook = (Rook) pieceIn(new Position(7, 7));
-            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "removePiece", rook.getPosition());
-			rook.setPosition(Position.fromString("f8"));
-			rook.setHasMoved(true);
-		}
+        switch (move.UCImove()) {
+            case "e1c1" -> handleRookMoveInCastling("a1","d1");
+            case "e1g1" -> handleRookMoveInCastling("h1","f1");
+            case "e8c8" -> handleRookMoveInCastling("a8","d8");
+            case "e8g8" -> handleRookMoveInCastling("h8","f8");
+        }
 	}
 
+    private void handleRookMoveInCastling(String iniPos, String fPos){
+        Optional<Rook> rook = Optional.ofNullable((Rook) pieceIn(iniPos));
+        if(rook.isEmpty()) {
+            return;
+        }
+        sendNotification(UPDATE_VIEW, "removePiece", rook.get().getPosition());
+        rook.get().setPositionFromString(fPos);
+        rook.get().setHasMoved(true);
+    }
+
 	private void updateView() {
-        if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "drawBoard");
+        sendNotification(UPDATE_VIEW, "drawBoard");
 		for (Piece piece : pieces) {
-            if(!isCopy) NotificationHandler.send(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
+            sendNotification(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
 		}
 	}
 
@@ -164,6 +170,10 @@ public class Board {
             piecesCopy.add(piece.copy());
         }
         return new Board(piecesCopy,isCheck);
+    }
+
+    private void sendNotification(String channelName, String functionName, Object... args){
+        if(!isCopy) NotificationHandler.send(channelName,functionName,args);
     }
 
 	@Override

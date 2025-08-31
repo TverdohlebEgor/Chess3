@@ -10,10 +10,7 @@ import model.pieces.Piece;
 import observer.NotificationHandler;
 import view.BoardView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static model.enums.PieceColorEnum.WHITE;
 import static utils.Channels.RETURN_COMMAND;
@@ -24,8 +21,9 @@ import static utils.LegalMovesAdjuster.*;
 public class GameEngine {
 	private final Map<String, String> specialCommands = new HashMap<>();
 	private BoardView boardView;
-	private Board board;
-	private List<Move> legalMoves = new ArrayList<>();
+	private final Board board;
+	private final List<Move> legalMoves = new ArrayList<>();
+    private boolean testMode = false;
 
 	@Getter
 	private PieceColorEnum turn = WHITE;
@@ -41,7 +39,8 @@ public class GameEngine {
 	}
 
 	public GameEngine(boolean testMode) {
-		board = new Board();
+		board = new Board(true);
+        this.testMode = true;
 	}
 
 	public String boardStatus() {
@@ -61,9 +60,18 @@ public class GameEngine {
 			writeToTerminal(returnText);
 		}
         switch (inputText) {
-            case "rotate" -> boardView.rotateAndDraw();
-            case "boardStatus" -> writeToTerminal(board.toString());
-            case "reset" -> board.reset();
+            case "rotate" -> {
+                boardView.rotateAndDraw();
+                return "";
+            }
+            case "boardStatus" -> {
+                writeToTerminal(board.toString());
+                return "";
+            }
+            case "reset" -> {
+                resetBoard();
+                return "";
+            }
         }
 		return handleMove(inputText,MoveType.SAN).UCImove();
 	}
@@ -75,31 +83,33 @@ public class GameEngine {
 				legalMoves.addAll(piece.updateLegalMoves(board));
 			}
 		}
+        removeDangareousForKingMoves(legalMoves,board);
 		solveConflict(legalMoves);
         addChecks(legalMoves,board);
-        removeDangareousForKingMoves(legalMoves,board);
-		Move toMove = null;
+		Optional<Move> toMove = Optional.empty();
 		for (Move move : legalMoves) {
 			if ((moveType == MoveType.SAN && move.SANmove().equals(inputText))
 			||  (moveType == MoveType.UCI && move.UCImove().equals(inputText))) {
-				toMove = move;
+				toMove = Optional.of(move);
 				break;
 			}
 		}
-		if (toMove == null) {
+		if (toMove.isEmpty()) {
 			illegalMove();
 		} else {
-			board.move(toMove);
+			board.move(toMove.get());
 			changeTurn();
-			return toMove;
+			return toMove.get();
 		}
 		return new Move(null,"",null);
 	}
 
 	private void initSpecialCommands() {
-		specialCommands.put("help", " WELCOME TO THE DRUNK ONE NIGHTER CHESS GAME " +
-			"\n reset -> reset the game TODO" +
-			"");
+		specialCommands.put("help", """
+                 Welcome back to the third season of I reimplement chess when I'm bored \
+                rotate
+                boardStatus
+                reset""");
 		specialCommands.put("turn", "It's " + turn.name().toLowerCase() + " turn");
 	}
 
@@ -108,7 +118,7 @@ public class GameEngine {
 	}
 
 	private void writeToTerminal(String text) {
-		NotificationHandler.send(RETURN_COMMAND, "returnCommand", text);
+        if(!testMode)NotificationHandler.send(RETURN_COMMAND, "returnCommand", text);
 	}
 
 	private void changeTurn() {

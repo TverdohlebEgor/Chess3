@@ -1,7 +1,9 @@
 package piece;
 
 import controll.GameEngine;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import model.Move;
 import model.enums.MoveType;
 import observer.NotificationHandler;
 import util.PressoWrapper;
@@ -15,29 +17,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static util.FENPrinter.logErrorFEN;
 
 @Slf4j
+@UtilityClass
 public class PieceTest {
-	private final GameEngine gameEngine;
-	private final PressoWrapper pressoWrapper;
+	private static final GameEngine gameEngine = new GameEngine(true);
+	private static StockFishWrapper stockFishWrapper;
 
-	public PieceTest() {
-		NotificationHandler.setEnabled(false);
-		this.gameEngine = new GameEngine(true);
-		pressoWrapper = new PressoWrapper();
+    static {
+        try {
+            stockFishWrapper = new StockFishWrapper();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	}
-
-	public void correctMovesTest(List<String> moves) {
+	public static void correctMovesTest(List<String> moves) {
 		log.info("####################");
 		String lastCorrect = "8/8/8/8/8/8/8/8";
 		try {
 			gameEngine.resetBoard();
-			pressoWrapper.resetBoard();
+			stockFishWrapper.resetBoard();
+            List<String> smoves = new ArrayList<>();
 			for (String move : moves) {
-				gameEngine.handleMove(move, MoveType.SAN);
-				pressoWrapper.sendCommand(move);
+				Move smove = gameEngine.handleMove(move, MoveType.SAN);
+                smoves.add(smove.UCImove());
+				stockFishWrapper.simulateMoves(smoves);
 
 				String myFen = gameEngine.boardStatus();
-				String stockFen = pressoWrapper.getFen();
+				String stockFen = stockFishWrapper.getFen();
 
 				String moveString = "Move:" + move;
 				log.info(moveString);

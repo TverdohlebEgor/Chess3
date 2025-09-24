@@ -12,7 +12,8 @@ public class StockFishWrapper {
 	private static BufferedWriter writer;
 
 	public StockFishWrapper () throws IOException {
-		String stockfishPath = Paths.get(System.getProperty("project.root"),"src","test","resources","stockfish").toString();
+		log.info(System.getProperty("project.root")+"/src"+"/test"+"/resources"+ "/stockfish-windows.exe");
+		String stockfishPath = Paths.get(System.getProperty("project.root"),"src","test","resources", "stockfish-windows.exe").toString();
 		log.info(stockfishPath);
 		Process process = new ProcessBuilder(stockfishPath).start();
 		reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

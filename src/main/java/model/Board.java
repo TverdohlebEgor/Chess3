@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import model.enums.PieceColorEnum;
 import model.pieces.*;
-import observer.NotificationHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Optional;
 
 import static model.enums.PieceColorEnum.BLACK;
 import static model.enums.PieceColorEnum.WHITE;
-import static utils.Channels.UPDATE_VIEW;
 
 @Slf4j
 public class Board {
@@ -61,7 +59,6 @@ public class Board {
 		for (int i = 0; i < 64; i++) {
 			int x = i / 8;
 			int y = i % 8;
-            sendNotification(UPDATE_VIEW, "removePiece", new Position(x, y));
 		}
 		pieces.clear();
 		addInitialPieces(WHITE);
@@ -70,11 +67,9 @@ public class Board {
 
 	private void setPiece(Piece piece) {
 		pieces.add(piece);
-        sendNotification(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
 	}
 
 	public void removePiece(Position pos) {
-        sendNotification(UPDATE_VIEW, "removePiece", pos);
 		for (Piece piece : pieces) {
 			if (piece.getPosition().equals(pos)) {
 				pieces.remove(piece);
@@ -125,12 +120,10 @@ public class Board {
 		} else {
 			handlingCastling(move);
             handleChecks(move);
-            sendNotification(UPDATE_VIEW, "removePiece", move.initialPosition());
 			Piece pieceToMove = pieceIn(move.initialPosition());
 			pieceToMove.setPosition(move.finalPosition());
 			pieceToMove.setHasMoved(true);
 		}
-        updateView();
 	}
 
 	private void handlingCastling(Move move) {
@@ -148,17 +141,9 @@ public class Board {
         if(rook.isEmpty()) {
             return;
         }
-        sendNotification(UPDATE_VIEW, "removePiece", rook.get().getPosition());
         rook.get().setPositionFromString(fPos);
         rook.get().setHasMoved(true);
     }
-
-	private void updateView() {
-        sendNotification(UPDATE_VIEW, "drawBoard");
-		for (Piece piece : pieces) {
-            sendNotification(UPDATE_VIEW, "setPiece", piece.getPosition(), piece);
-		}
-	}
 
     private void handleChecks(Move move){
         this.isCheck = move.SANmove().endsWith("+");
@@ -170,10 +155,6 @@ public class Board {
             piecesCopy.add(piece.copy());
         }
         return new Board(piecesCopy,isCheck);
-    }
-
-    private void sendNotification(String channelName, String functionName, Object... args){
-        if(!isCopy) NotificationHandler.send(channelName,functionName,args);
     }
 
 	@Override

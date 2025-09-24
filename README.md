@@ -1,11 +1,66 @@
-# Chees3
-As an old tradition once in a while I reimplement chess to see how much have I grown as a developer
+# getting-started
 
-# General philosophy
-As with most of my projects, this one was a cool idea that I wanted to code for the sake of coding, not for practical use. While my projects don't serve a real purpose on their own, I intend to use them within other projects. I often avoid mainstream solutions because they're too convenient for my taste. If you've found this repository and wish to use it, proceed at your own risk
+This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
-Also, don't expect the development to follow any strict regimen, as my energy for extra coding projects is very sporadic. Specifically for Java.
+If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
-For java things I usually create "plug-and-play" solutions because I find setting up a remote repository annoying (though I may do so in the future to learn). As a result, you might find copied code throughout the project, but I only include JAR files once I'm reasonably sure they're stable.
+## Running the application in dev mode
 
+You can run your application in dev mode that enables live coding using:
 
+```shell script
+./mvnw quarkus:dev
+```
+
+> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+
+## Packaging and running the application
+
+The application can be packaged using:
+
+```shell script
+./mvnw package
+```
+
+It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
+Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+
+The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+
+If you want to build an _über-jar_, execute the following command:
+
+```shell script
+./mvnw package -Dquarkus.package.jar.type=uber-jar
+```
+
+The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+
+## Creating a native executable
+
+You can create a native executable using:
+
+```shell script
+./mvnw package -Dnative
+```
+
+Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+
+```shell script
+./mvnw package -Dnative -Dquarkus.native.container-build=true
+```
+
+You can then execute your native executable with: `./target/getting-started-1.0.0-SNAPSHOT-runner`
+
+If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+
+## Related Guides
+
+- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
+
+## Provided Code
+
+### REST
+
+Easily start your REST Web Services
+
+[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)

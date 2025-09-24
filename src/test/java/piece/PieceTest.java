@@ -5,8 +5,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import model.Move;
 import model.enums.MoveType;
-import observer.NotificationHandler;
-import util.PressoWrapper;
 import util.StockFishWrapper;
 
 import java.io.IOException;

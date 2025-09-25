@@ -1,0 +1,234 @@
+openapi: 3.1.0
+info:
+  title: APIFiddle Sample Definition
+  description: Example workspace
+  version: 0.0.0
+paths:
+  /masters:
+    get:
+      operationId: mastersGames
+      summary: Masters Games
+      responses:
+        "200":
+          description: The request was successful, and the server has returned the
+            requested resource in the response body.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  opening:
+                    type: object
+                    properties:
+                      eco:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                      - name
+                      - eco
+                  white:
+                    type: number
+                  black:
+                    type: number
+                  draws:
+                    type: number
+                  moves:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uci:
+                          type: string
+                        san:
+                          type: string
+                        avarageRating:
+                          type: number
+                        white:
+                          type: number
+                        black:
+                          type: number
+                        draws:
+                          type: number
+                        game:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            winner:
+                              type: string
+                              enum:
+                                - white
+                                - black
+                            white:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                rating:
+                                  type: integer
+                              required:
+                                - name
+                                - rating
+                            black:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                rating:
+                                  type: integer
+                              required:
+                                - name
+                                - rating
+                            year:
+                              type: number
+                            month:
+                              type: string
+                          required:
+                            - id
+                            - white
+                            - black
+                            - year
+                            - month
+                        opening:
+                          type: object
+                          properties:
+                            eco:
+                              type: string
+                            name:
+                              type: string
+                          required:
+                            - eco
+                            - name
+                      required:
+                        - uci
+                        - san
+                        - avarageRating
+                        - white
+                        - black
+                        - draws
+                        - game
+                  topGames:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uci:
+                          type: string
+                        id:
+                          type: string
+                        winner:
+                          type: string
+                          enum:
+                            - white
+                            - black
+                        black:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            rating:
+                              type: integer
+                          required:
+                            - name
+                            - rating
+                        white:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            rating:
+                              type: integer
+                          required:
+                            - name
+                            - rating
+                        year:
+                          type: number
+                        month:
+                          type: string
+                      required:
+                        - uci
+                        - id
+                        - black
+                        - white
+                        - year
+                        - month
+                required:
+                  - white
+                  - black
+                  - draws
+                  - moves
+                  - topGames
+      parameters:
+        - in: query
+          name: fen
+          required: false
+          style: form
+          description: FEN of the root position
+          explode: true
+          schema:
+            type: string
+          allowReserved: false
+        - in: query
+          name: play
+          required: false
+          style: form
+          description: >-
+            Default: ""
+
+            Example: play=d2d4,d7d5,c2c4,c7c6,c4d5
+
+
+            Comma separated sequence of legal moves in UCI notation. Play
+            additional moves starting from fen. Required to find an opening
+            name, if fen is not an exact match for a named position.
+          explode: true
+          schema:
+            type: string
+          allowReserved: false
+        - in: query
+          name: since
+          required: false
+          style: form
+          description: |-
+            Default: 1952
+
+            Include only games from this year or later
+          explode: true
+          schema:
+            type: number
+          allowReserved: false
+        - in: query
+          name: until
+          required: false
+          style: form
+          description: Include only games from this year or earlier
+          explode: true
+          schema:
+            type: number
+          allowReserved: false
+        - in: query
+          name: moves
+          required: false
+          style: form
+          description: |-
+            Default: 12
+
+            Number of most common moves to display
+          explode: true
+          schema:
+            type: number
+          allowReserved: false
+        - in: query
+          name: topGames
+          required: false
+          style: form
+          description: |-
+            number <= 15
+            Default: 15
+
+            Number of top games to display
+          explode: true
+          schema:
+            type: number
+          allowReserved: false

@@ -11,3 +11,7 @@ in a week or two, I'm sure there is plenty to refine around the edges.
 
 09/24/2025
 I decided to transform the base of the game to a chess server to serve the godot frontend i'm building, the GUI part is gone since it was pretty busted and I made the project quarkus base to make a bit more professional (I tough about using spring-boot to learn something different but I'm not really in hard coding mood since I'm working much more these dayes)
+
+09/25/2025
+I built my first open api specification :), it was boring but the result quite cool. Also the serverBoard on the front end is playable even if I have a bunch of debugging to do,
+anyway I want first to work on the analyzer that will be the most usefull and then all the others

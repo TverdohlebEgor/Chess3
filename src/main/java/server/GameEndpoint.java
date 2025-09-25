@@ -51,4 +51,17 @@ public class GameEndpoint {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
+
+    @GET
+    @Path("/{gameId}/move/{uciMove}")
+    public Response uciMove(
+            @PathParam("gameId") UUID gameId,
+            @PathParam("uciMove") String uciMove
+            ) {
+        if (ongoingGames.containsKey(gameId)) {
+            return Response.status(Response.Status.OK).entity(ongoingGames.get(gameId).UCImove(uciMove)).build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
 }
